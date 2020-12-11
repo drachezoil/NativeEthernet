@@ -169,32 +169,38 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
     return true;
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip)
+int EthernetClass::begin(uint8_t *mac, IPAddress ip)
+{
+	return begin(mac, ip, 60000);
+}
+
+int EthernetClass::begin(uint8_t *mac, IPAddress ip, unsigned long timeout)
 {
 	// Assume the DNS server will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress dns = ip;
 	dns[3] = 1;
-	begin(mac, ip, dns);
+	return begin(mac, ip, dns, timeout);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns)
+int EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, unsigned long timeout)
 {
 	// Assume the gateway will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress gateway = ip;
 	gateway[3] = 1;
-	begin(mac, ip, dns, gateway);
+	return begin(mac, ip, dns, gateway, timeout);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway)
+int EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, unsigned long timeout)
 {
 	IPAddress subnet(255, 255, 255, 0);
-	begin(mac, ip, dns, gateway, subnet);
+	return begin(mac, ip, dns, gateway, subnet, timeout);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
+int EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, unsigned long timeout)
 {
+	unsigned long startMillis = millis();
     if(!fnet_netif_is_initialized(fnet_netif_get_default())){
         struct fnet_init_params     init_params;
         if(stack_heap_size == 0){
@@ -259,7 +265,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 //            Serial.println("netif Initialized");
             if(fnet_netif_get_default() == 0){
 //              Serial.println("ERROR: Network Interface is not configurated!");
-              return;
+              return false;
             }
             else {
 //              Serial.println("SUCCESS: Network Interface is configurated!");
@@ -272,12 +278,12 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
           }
           else {
 //            Serial.println("Error:netif initialization failed.\n");
-            return;
+            return false;
           }
         }
         else {
 //          Serial.println("Error:TCP/IP stack initialization failed.\n");
-          return;
+          return false;
         }
     }
     else{
@@ -291,7 +297,9 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
     fnet_netif_set_ip4_dns(fnet_netif_get_default(), dns);
     
     while(!link_status){
+		if(millis() >= startMillis + timeout) return false;
     }
+	return true;
 }
 
 void EthernetClass::init(uint8_t sspin)

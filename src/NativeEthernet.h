@@ -103,11 +103,12 @@ public:
 	static EthernetLinkStatus linkStatus();
 	static EthernetHardwareStatus hardwareStatus();
 
-	// Manaul configuration
-	static void begin(uint8_t *mac, IPAddress ip);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
+	// Manual configuration
+	static int begin(uint8_t *mac, IPAddress ip);
+	static int begin(uint8_t *mac, IPAddress ip, unsigned long timeout = 60000);
+	static int begin(uint8_t *mac, IPAddress ip, IPAddress dns, unsigned long timeout = 60000);
+	static int begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, unsigned long timeout = 60000);
+	static int begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, unsigned long timeout = 60000);
 	static void init(uint8_t sspin = 10);
 
 	static void MACAddress(uint8_t *mac_address);
